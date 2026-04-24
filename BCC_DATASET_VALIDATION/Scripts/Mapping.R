@@ -1,4 +1,3 @@
-# ============================================================
 # FIXED, FULL END-TO-END SCRIPT (runs from DATA directory)
 #
 # What this script produces (in ONE folder):
@@ -20,14 +19,14 @@ suppressPackageStartupMessages({
 })
 
 # -----------------------------
-# 0) Paths (you said getwd() is .../DATA)
+# 0) Paths 
 # -----------------------------
 counts_file <- "GSE123813_bcc_scRNA_counts.txt.gz"
 meta_t_file <- "GSE123813_bcc_tcell_metadata.txt.gz"
 clin_file   <- "41591_2019_522_MOESM2_ESM.xlsx"
 atlas_rds   <- "CD8.rds"  # reference atlas
 
-# output directories (FIX: create them now so ggsave never prompts)
+# output directories 
 outdir   <- "outputs_yost_to_atlas"
 resdir   <- file.path(outdir, "RESULTS")
 dir.create(resdir, showWarnings = FALSE, recursive = TRUE)
@@ -98,7 +97,7 @@ meta_tcell <- fread(meta_t_file)
 cat("T-cell metadata dim: ", nrow(meta_tcell), " x ", ncol(meta_tcell), "\n", sep="")
 
 # ============================================================
-# 2) LOAD CLINICAL (Supp Table 1) + FILTER BCC ONLY (FIX)
+# 2) LOAD CLINICAL (Supp Table 1) + FILTER BCC ONLY 
 # ============================================================
 cat("\n[3] Loading clinical table + filtering to BCC...\n")
 supp <- read_excel(clin_file, skip = 2)
