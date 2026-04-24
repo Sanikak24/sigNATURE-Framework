@@ -12,28 +12,43 @@ suppressPackageStartupMessages({
 
 # Custom helper: Add missing genes with zero expression for Seurat v5 
 AddMissingGenes <- function(seurat_obj, gene_list, assay = "RNA") {
-  current_genes <- rownames(seurat_obj)
+  stopifnot(assay %in% Assays(seurat_obj))
+  DefaultAssay(seurat_obj) <- assay
+  
+  gene_list <- unique(gene_list)
+  current_genes <- rownames(seurat_obj[[assay]])
   missing_genes <- setdiff(gene_list, current_genes)
   
-  if (length(missing_genes) > 0) {
-    zero_mat <- Matrix::Matrix(
-      0,
-      nrow = length(missing_genes),
-      ncol = ncol(seurat_obj),
-      dimnames = list(missing_genes, colnames(seurat_obj)),
-      sparse = TRUE
-    )
-    
-    counts <- GetAssayData(seurat_obj, assay = assay, layer = "counts")
-    counts <- rbind(counts, zero_mat)
-    seurat_obj <- SetAssayData(seurat_obj, assay = assay, layer = "counts", new.data = counts)
-    
-    data <- GetAssayData(seurat_obj, assay = assay, layer = "data")
-    data <- rbind(data, zero_mat)
-    seurat_obj <- SetAssayData(seurat_obj, assay = assay, layer = "data", new.data = data)
+  message(length(missing_genes), " missing genes to add.")
+  
+  if (length(missing_genes) == 0) {
+    return(seurat_obj)
   }
   
-  return(seurat_obj)
+  counts <- GetAssayData(seurat_obj, assay = assay, layer = "counts")
+  
+  zero_counts <- Matrix::Matrix(
+    0,
+    nrow = length(missing_genes),
+    ncol = ncol(counts),
+    sparse = TRUE,
+    dimnames = list(missing_genes, colnames(counts))
+  )
+  
+  counts_new <- rbind(counts, zero_counts)
+  counts_new <- counts_new[unique(c(current_genes, missing_genes)), , drop = FALSE]
+  
+  meta <- seurat_obj@meta.data
+  
+  new_obj <- CreateSeuratObject(
+    counts = counts_new,
+    meta.data = meta,
+    assay = assay
+  )
+  
+  new_obj <- NormalizeData(new_obj, assay = assay, verbose = FALSE)
+  
+  return(new_obj)
 }
 
 # 0) INPUT FILES
