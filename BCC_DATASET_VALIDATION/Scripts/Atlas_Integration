@@ -1,6 +1,6 @@
 
 # Yost BCC T cells -> CD8 atlas mapping (Seurat)
-# Author: (you)
+
 
 suppressPackageStartupMessages({
   library(Seurat)
