@@ -8,14 +8,7 @@
 #   4) Projected/predicted cluster UMAP (ref.umap colored by predicted atlas label)
 #   5) Projection confidence plot (predicted.Ref_cluster.score) in ref.umap space
 #
-# Key fixes vs your error log:
-#   - Creates outputs folder + RESULTS subfolder up front (no interactive prompt)
-#   - No FeaturePlot(NULL) call
-#   - Confidence plot uses correct column names from Embeddings(): UMAP_1 / UMAP_2
-#     (we rename columns safely in case they are "UMAP1"/"UMAP2")
-#   - Filters clinical data to Tumor Type == "BCC" (your requested fix)
-#   - Subsets CD8 BEFORE combining/overlay
-# ============================================================
+
 
 suppressPackageStartupMessages({
   library(data.table)
