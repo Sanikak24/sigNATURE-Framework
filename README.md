@@ -26,13 +26,13 @@ Rscript bcc/scripts/Alluvial_plot.R
 
 ### NSCLC
 ```bash
-Rscript nsclc/scripts/fig1.R
-Rscript nsclc/scripts/fig2.R
-Rscript nsclc/scripts/fig3.R
-Rscript nsclc/scripts/fig4.R
-Rscript nsclc/scripts/fig5.R
-Rscript nsclc/scripts/Sfig1.R
-Rscript nsclc/scripts/Sfig2.R
+Rscript nsclc/scripts/Fig1.R
+Rscript nsclc/scripts/Fig2.R
+Rscript nsclc/scripts/Fig3.R
+Rscript nsclc/scripts/Fig4.R
+Rscript nsclc/scripts/Fig5.R
+Rscript nsclc/scripts/SFig1.R
+Rscript nsclc/scripts/SFig2.R
 ```
 
 ## Outputs
