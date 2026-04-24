@@ -86,29 +86,45 @@ library(readr)
 #NEW
 # --- Custom helper: Add missing genes with zero expression for Seurat v5 ---
 AddMissingGenes <- function(seurat_obj, gene_list, assay = "RNA") {
-  current_genes <- rownames(seurat_obj)
+  stopifnot(assay %in% Assays(seurat_obj))
+  DefaultAssay(seurat_obj) <- assay
+  
+  gene_list <- unique(gene_list)
+  current_genes <- rownames(seurat_obj[[assay]])
   missing_genes <- setdiff(gene_list, current_genes)
   
-  if (length(missing_genes) > 0) {
-    zero_mat <- Matrix::Matrix(
-      0,
-      nrow = length(missing_genes),
-      ncol = ncol(seurat_obj),
-      dimnames = list(missing_genes, colnames(seurat_obj)),
-      sparse = TRUE
-    )
-    
-    counts <- GetAssayData(seurat_obj, assay = assay, layer = "counts")
-    counts <- rbind(counts, zero_mat)
-    seurat_obj <- SetAssayData(seurat_obj, assay = assay, layer = "counts", new.data = counts)
-    
-    data <- GetAssayData(seurat_obj, assay = assay, layer = "data")
-    data <- rbind(data, zero_mat)
-    seurat_obj <- SetAssayData(seurat_obj, assay = assay, layer = "data", new.data = data)
+  message(length(missing_genes), " missing genes to add.")
+  
+  if (length(missing_genes) == 0) {
+    return(seurat_obj)
   }
   
-  return(seurat_obj)
+  counts <- GetAssayData(seurat_obj, assay = assay, layer = "counts")
+  
+  zero_counts <- Matrix::Matrix(
+    0,
+    nrow = length(missing_genes),
+    ncol = ncol(counts),
+    sparse = TRUE,
+    dimnames = list(missing_genes, colnames(counts))
+  )
+  
+  counts_new <- rbind(counts, zero_counts)
+  counts_new <- counts_new[unique(c(current_genes, missing_genes)), , drop = FALSE]
+  
+  meta <- seurat_obj@meta.data
+  
+  new_obj <- CreateSeuratObject(
+    counts = counts_new,
+    meta.data = meta,
+    assay = assay
+  )
+  
+  new_obj <- NormalizeData(new_obj, assay = assay, verbose = FALSE)
+  
+  return(new_obj)
 }
+
 CD8_Obj <- readRDS("CD8.rds")
 liu_counts <- readRDS("GSE179994_all.Tcell.rawCounts.rds/GSE179994_all.Tcell.rawCounts.rds")
 liu_meta   <- read_tsv("GSE179994_Tcell.metadata.tsv/GSE179994_Tcell.metadata.tsv")
@@ -117,10 +133,10 @@ liu_meta_cd8 <- liu_meta %>% filter(celltype == "CD8")
 counts_cd8   <- liu_counts[, liu_meta_cd8$cellid]
 
 # 2. Create and Normalize Liu CD8 Seurat Object
-liu_seurat <- CreateSeuratObject(counts_cd8, meta.data = as.data.frame(liu_meta_cd8)) %>%
-  NormalizeData() %>%
-  FindVariableFeatures() %>%  # optional; keeps Seurat happy but not used
-  ScaleData()
+#liu_seurat <- CreateSeuratObject(counts_cd8, meta.data = as.data.frame(liu_meta_cd8)) %>%
+  #NormalizeData() %>%
+  #FindVariableFeatures() %>%  # optional; keeps Seurat happy but not used
+  #ScaleData()
 # 3. Preprocess Reference CD8 Seurat Object
 CD8_Obj <- CD8_Obj %>%
   NormalizeData() %>%
@@ -131,7 +147,14 @@ CD8_Obj <- CD8_Obj %>%
 
 # 4. Add missing genes (with zeros) to Liu object to match reference
 all_genes <- rownames(CD8_Obj)
-liu_seurat <- AddMissingGenes(liu_seurat, all_genes)
+
+liu_seurat <- AddMissingGenes(
+  seurat_obj = liu_cd8_corrected,
+  gene_list = all_genes,
+  assay = "RNA"
+)
+
+length(intersect(rownames(CD8_Obj), rownames(liu_seurat)))
 
 # 5. Find Anchors with All Genes
 anchors <- FindTransferAnchors(
@@ -244,6 +267,71 @@ p_alluvial <- ggplot(summary_df, aes(axis1 = Liu_Cluster, axis2 = Predicted_Labe
 
 final_plot <- plot_grid(p_alluvial, legend_table, rel_widths = c(2.5, 1), nrow = 1)
 print(final_plot)
+
+###without legend
+# 1. Prepare data (Same as before)
+summary_df <- liu_seurat@meta.data %>%
+  mutate(Predicted_Name = as.character(majority_vote_pca)) %>%
+  mutate(Predicted_Name = ifelse(is.na(Predicted_Name) | Predicted_Name == "NA", "NA", Predicted_Name)) %>%
+  count(cluster, Predicted_Name, name = "Freq") %>%
+  rename(Liu_Cluster = cluster)
+
+# 2. Create the Slimmed Plot
+p_slimmed <- ggplot(summary_df, 
+                    aes(axis1 = Liu_Cluster, axis2 = Predicted_Name, y = Freq)) +
+  # Reduced width of the 'flow' (the alluvium) and the boxes (strata)
+  # width = 1/20 makes the boxes much thinner than 1/12
+  geom_alluvium(aes(fill = Liu_Cluster), width = 1/20, alpha = 0.7) +
+  geom_stratum(width = 1/20, fill = "gray95", color = "black") +
+  
+  # LEFT LABELS
+  geom_text(stat = "stratum", 
+            aes(label = ifelse(after_stat(x) == 1, as.character(after_stat(stratum)), "")), 
+            nudge_x = -0.05, # Smaller nudge since boxes are thinner
+            hjust = 1, 
+            size = 3) +
+  
+  # RIGHT LABELS (Using repel to prevent overlap, but still no arrows)
+  geom_text_repel(stat = "stratum",
+                  aes(label = ifelse(after_stat(x) == 2, as.character(after_stat(stratum)), "")),
+                  size = 3,
+                  segment.color = NA,
+                  nudge_x = 0.05,
+                  direction = "y",
+                  hjust = 0,
+                  max.overlaps = Inf) +
+  
+  # The key to "slimming" the plot is the limits and expansion
+  scale_x_discrete(
+    limits = c("Liu Cluster", "Predicted Cluster"),
+    # Reduced expansion values to bring the columns closer together
+    expand = expansion(mult = c(0.25, 0.4)) 
+  ) +
+  labs(
+    title = "Liu Clusters → Predicted CD8 Clusters",
+    x = NULL, y = "Number of Cells", fill = "Liu Cluster"
+  ) +
+  theme_minimal(base_size = 14) +
+  theme(
+    panel.grid = element_blank(),
+    axis.text.y = element_blank(),
+    axis.ticks.y = element_blank(),
+    # Force the plot area to be taller/narrower by setting aspect ratio
+    # aspect.ratio = 1.5 makes it taller than it is wide
+    aspect.ratio = 1.2 
+  )
+
+# 3. Print
+print(p_slimmed)
+# You may need the 'svglite' package installed
+# install.packages("svglite")
+
+ggsave(
+  filename = "Liu_to_Predicted_Alluvial.svg", 
+  plot = p_slimmed, 
+  width = 9, 
+  height = 12
+)
 
 #FIG E
 # ==============================================================================
