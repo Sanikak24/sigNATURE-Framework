@@ -1,6 +1,6 @@
-# Thesis analysis repository
+# sigNATURE Framework
 
-This repository contains R scripts for my thesis analyses.
+This repository contains R scripts for the construction of sigNATURE framework.
 
 # Datasets
 1) Reference atlas: https://singlecell.mdanderson.org/TCM/
