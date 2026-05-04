@@ -41,4 +41,4 @@ Write generated outputs to:
 - `results/nsclc/` for NSCLC results
 
 ## Data
-Raw data are **not** included. Put inputs under `data/` (see `data/README.md`).
+Raw data are **not** included. Check the links for raw datasdets.
