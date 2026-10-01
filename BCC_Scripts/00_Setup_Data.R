@@ -1,3 +1,5 @@
+source("scripts/setup_reference_atlases.R")
+
 # ============================================================
 # Project : sigNATURE Framework
 # Script  : 00_Setup_Data.R
@@ -7,20 +9,16 @@
 #   - data/bcc/GSE123813_bcc_scRNA_counts.txt.gz
 #   - data/bcc/GSE123813_bcc_tcell_metadata.txt.gz
 #   - data/bcc/41591_2019_522_MOESM2_ESM.xlsx
-#   - data/reference/CD8_Obj_for_mapping.rds
-#   - data/reference/CD4_Obj_for_mapping.rds
 # ============================================================
 
 options(timeout = max(3600, getOption("timeout")))
 
 bcc_data_dir <- file.path("data", "bcc")
-ref_data_dir <- file.path("data", "reference")
 
 message("Creating data directories...")
 dir.create(bcc_data_dir, recursive = TRUE, showWarnings = FALSE)
-dir.create(ref_data_dir, recursive = TRUE, showWarnings = FALSE)
 
-required_dirs <- c(bcc_data_dir, ref_data_dir)
+required_dirs <- c(bcc_data_dir)
 missing_dirs <- required_dirs[!dir.exists(required_dirs)]
 if (length(missing_dirs) > 0) {
   stop(
@@ -132,22 +130,7 @@ download_input <- function(name, url, destination, expected_md5 = NULL) {
   }
 }
 
-# MD Anderson T Cell Map reference objects:
-# https://singlecell.mdanderson.org/TCM/
 inputs <- list(
-  list(
-    name = "CD8 reference",
-    url = "https://singlecell.mdanderson.org/TCM/download/CD8",
-    destination = file.path(ref_data_dir, "CD8_Obj_for_mapping.rds"),
-    md5 = "52c6daf010f16020a8b36fb40bb95618"
-  ),
-  list(
-    name = "CD4 reference",
-    url = "https://singlecell.mdanderson.org/TCM/download/CD4",
-    destination = file.path(ref_data_dir, "CD4_Obj_for_mapping.rds"),
-    md5 = "69b4164d2672b39d70c61e574bcdcaa4"
-  ),
-
   # Yost et al. BCC count matrix and T-cell metadata from GEO GSE123813:
   # https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE123813
   list(

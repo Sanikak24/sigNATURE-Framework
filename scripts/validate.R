@@ -3,6 +3,7 @@
 # Lightweight validation: no downloads and no analysis execution.
 
 expected_files <- c(
+  "scripts/setup_reference_atlases.R",
   "BCC_Scripts/00_Setup_Data.R",
   "BCC_Scripts/01_Atlas_Integration.R",
   "BCC_Scripts/02_Mapping.R",

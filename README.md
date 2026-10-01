@@ -69,9 +69,9 @@ results/nsclc/intermediate/   Mapped NSCLC Seurat objects and caches
 Rscript NSCLC_Scripts/00_Setup_Data.R
 ```
 
-The setup script downloads or validates the Liu count matrix and metadata,
-extracts the clinical response table from the official Liu supplementary
-workbook, and validates the shared reference objects:
+The setup script downloads the shared CD4/CD8 reference atlases, the Liu count
+matrix and metadata, and extracts the clinical response table from the official
+Liu supplementary workbook:
 
 ```text
 data/reference/CD8_Obj_for_mapping.rds
@@ -118,6 +118,9 @@ Rscript BCC_Scripts/04_Alluvial_Plot.R
 Rscript BCC_Scripts/05_Original_Dataset_UMAP.R
 Rscript BCC_Scripts/06_Regression_Analysis_CD8.R
 ```
+
+The BCC setup downloads the BCC-specific inputs and the shared CD4/CD8
+reference atlases. It can be run independently of the NSCLC workflow.
 
 See `BCC_Scripts/README.md` for BCC-specific details.
 

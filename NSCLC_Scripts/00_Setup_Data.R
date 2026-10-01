@@ -1,5 +1,7 @@
 #!/usr/bin/env Rscript
 
+source("scripts/setup_reference_atlases.R")
+
 # ==============================================================================
 # NSCLC data setup
 #
@@ -205,19 +207,6 @@ decompress_gzip <- function(gz_file, output_file) {
   message("Created: ", output_file)
   
   invisible(output_file)
-}
-
-require_reference <- function(path, description) {
-  if (!is_valid_file(path)) {
-    stop(
-      description,
-      " was not found at:\n  ",
-      path,
-      "\n\nRun the existing reference-atlas setup first."
-    )
-  }
-  
-  message("Reference available: ", path)
 }
 
 normalize_header <- function(x) {
@@ -455,16 +444,6 @@ cd8_reference <- file.path(
 cd4_reference <- file.path(
   reference_dir,
   "CD4_Obj_for_mapping.rds"
-)
-
-require_reference(
-  cd8_reference,
-  "The shared CD8 reference atlas"
-)
-
-require_reference(
-  cd4_reference,
-  "The shared CD4 reference atlas"
 )
 
 # ------------------------------------------------------------------------------
