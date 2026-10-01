@@ -46,7 +46,7 @@ required_packages <- c(
   "FNN", "Matrix", "RColorBrewer", "Seurat", "SeuratObject", "cowplot",
   "data.table", "dplyr", "ggalluvial", "ggplot2", "ggpubr", "ggrepel",
   "ggsci", "gridExtra", "pROC", "patchwork", "readr", "readxl", "scales",
-  "stringr", "tidyr", "tidytext", "tidyverse", "viridis"
+  "stringr", "tidyr", "tidytext", "tidyverse", "viridis", "writexl"
 )
 missing_packages <- required_packages[
   !vapply(required_packages, requireNamespace, logical(1), quietly = TRUE)

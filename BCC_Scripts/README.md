@@ -30,9 +30,10 @@ Builds logistic regression models to evaluate associations between predicted CD8
 
 ## Running the pipeline
 
-Run all scripts from the project root (`sigNATURE-Framework_backup`):
+Run all scripts from the project root (`sigNATURE-Framework`):
 
 ```bash
+Rscript BCC_Scripts/00_Setup_Data.R
 Rscript BCC_Scripts/01_Atlas_Integration.R
 Rscript BCC_Scripts/02_Mapping.R
 Rscript BCC_Scripts/03_CD4_Analysis.R

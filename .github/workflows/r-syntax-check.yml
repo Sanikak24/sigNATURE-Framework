@@ -19,6 +19,7 @@ jobs:
         shell: Rscript {0}
         run: |
           scripts <- c(
+            "scripts/setup_reference_atlases.R",
             list.files("BCC_Scripts", pattern = "[.]R$", full.names = TRUE),
             list.files("NSCLC_Scripts", pattern = "[.]R$", full.names = TRUE),
             "scripts/validate.R"
